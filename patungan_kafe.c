@@ -1,143 +1,113 @@
 #include <stdio.h>
 #include <string.h>
 
-#define MAX_ORANG 10
+#define MAKS_ORANG 10
 
-// Bulatkan ke ribuan KE ATAS
-// Contoh: 25321 -> 26000, 25000 -> 25000
-int bulatkanKeRibuan(double nominal) {
+int bulatRibuan(double nominal) {
     int n = (int)nominal;
-    if (nominal > n) {
-        n = n + 1;
-    }
-    if (n % 1000 == 0) {
-        return n;
-    } else {
-        return (n / 1000 + 1) * 1000;
-    }
+    if (nominal > n) n++;
+    if (n % 1000 == 0) return n;
+    return (n / 1000 + 1) * 1000;
 }
 
-// Buang sisa ketikan biar scanf berikutnya aman
-void bersihkanBuffer() {
+void buangEnter() {
     int c;
-    while ((c = getchar()) != '\n' && c != EOF) {
-    }
+    while ((c = getchar()) != '\n' && c != EOF);
 }
 
-int main() {
-    char nama[MAX_ORANG][30];
-    double belanja[MAX_ORANG] = {0};
-    int bayarAkhir[MAX_ORANG] = {0};
-    int jumlahOrang = 0;
-    double persenPajak = 0;
+int main(void) {
+    char nama[MAKS_ORANG][30];
+    double makan[MAKS_ORANG] = {0};
+    int harusBayar[MAKS_ORANG] = {0};
+    int orang = 0;
+    double pajakPersen = 0;
 
-    printf("==============================\n");
-    printf("  PATUNGAN KAFE - SPLIT BILL\n");
-    printf("==============================\n");
+    printf("=== PATUNGAN KAFE ===\n");
 
-    // ALUR 1: Siapa aja yang ikut makan?
+    /* 1. Siapa aja yang ikut? */
     while (1) {
-        printf("\nBerapa orang yang ikut makan? (1-%d): ", MAX_ORANG);
-        if (scanf("%d", &jumlahOrang) != 1) {
-            printf("Harus masukkan angka!\n");
-            bersihkanBuffer();
+        printf("\nJumlah orang (1-%d): ", MAKS_ORANG);
+        if (scanf("%d", &orang) != 1) {
+            printf("Masukkan angka!\n");
+            buangEnter();
             continue;
         }
-        bersihkanBuffer();
-        if (jumlahOrang < 1 || jumlahOrang > MAX_ORANG) {
-            printf("Harus antara 1 sampai %d!\n", MAX_ORANG);
+        buangEnter();
+        if (orang < 1 || orang > MAKS_ORANG) {
+            printf("Antara 1-%d!\n", MAKS_ORANG);
             continue;
         }
         break;
     }
 
-    for (int i = 0; i < jumlahOrang; i++) {
-        printf("\n--- Teman ke-%d ---\n", i + 1);
-
+    for (int i = 0; i < orang; i++) {
+        printf("\nOrang ke-%d\n", i + 1);
         printf("Nama: ");
-        if (fgets(nama[i], sizeof(nama[i]), stdin) == NULL) {
+        if (fgets(nama[i], sizeof nama[i], stdin) == NULL) {
             strcpy(nama[i], "Teman");
         } else {
-            nama[i][strcspn(nama[i], "\n")] = '\0';
-            if (strlen(nama[i]) == 0) {
-                sprintf(nama[i], "Teman-%d", i + 1);
-            }
+            nama[i][strcspn(nama[i], "\n")] = 0;
+            if (strlen(nama[i]) == 0) sprintf(nama[i], "Teman-%d", i + 1);
         }
-
         while (1) {
-            printf("Total belanjaan %s (Rp): ", nama[i]);
-            if (scanf("%lf", &belanja[i]) != 1) {
-                printf("Harus masukkan angka! Coba lagi.\n");
-                bersihkanBuffer();
+            printf("Belanja %s (Rp): ", nama[i]);
+            if (scanf("%lf", &makan[i]) != 1) {
+                printf("Masukkan angka!\n");
+                buangEnter();
                 continue;
             }
-            bersihkanBuffer();
-            if (belanja[i] < 0) {
-                printf("Tidak boleh minus! Coba lagi.\n");
+            buangEnter();
+            if (makan[i] < 0) {
+                printf("Tidak boleh minus!\n");
                 continue;
             }
             break;
         }
     }
 
-    // ALUR 2: Hitung total semuanya (contoh: 100000)
-    double totalKotor = 0;
-    for (int i = 0; i < jumlahOrang; i++) {
-        totalKotor += belanja[i];
-    }
-
-    if (totalKotor <= 0) {
-        printf("\nTotal belanja Rp 0, tidak ada yang perlu dibagi.\n");
+    /* 2. Total semuanya */
+    double total = 0;
+    for (int i = 0; i < orang; i++) total += makan[i];
+    if (total <= 0) {
+        printf("\nTotal Rp 0, selesai.\n");
         return 0;
     }
+    printf("\nTotal semuanya: Rp %.0f\n", total);
 
-    printf("\n------------------------------\n");
-    printf("Total semuanya : Rp %.0f\n", totalKotor);
-    printf("------------------------------\n");
-
-    // ALUR 3: Masukkan pajak, lalu tampilkan total + pajak
+    /* 3. Pajak -> total + pajak */
     while (1) {
-        printf("\nMasukkan pajak (%%, 0-100, contoh 10): ");
-        if (scanf("%lf", &persenPajak) != 1) {
-            printf("Harus masukkan angka! Coba lagi.\n");
-            bersihkanBuffer();
+        printf("Pajak %% (0-100): ");
+        if (scanf("%lf", &pajakPersen) != 1) {
+            printf("Masukkan angka!\n");
+            buangEnter();
             continue;
         }
-        bersihkanBuffer();
-        if (persenPajak < 0 || persenPajak > 100) {
-            printf("Pajak harus 0-100! Coba lagi.\n");
+        buangEnter();
+        if (pajakPersen < 0 || pajakPersen > 100) {
+            printf("Harus 0-100!\n");
             continue;
         }
         break;
     }
 
-    double nominalPajak = totalKotor * persenPajak / 100.0;
-    double totalPlusPajak = totalKotor + nominalPajak;
+    double rpPajak = total * pajakPersen / 100.0;
+    double totalPajak = total + rpPajak;
+    printf("Pajak (%.1f%%): Rp %.0f\n", pajakPersen, rpPajak);
+    printf("Total + pajak: Rp %.0f\n", totalPajak);
 
-    printf("\n------------------------------\n");
-    printf("Total awal     : Rp %.0f\n", totalKotor);
-    printf("Pajak (%.1f%%)    : Rp %.0f\n", persenPajak, nominalPajak);
-    printf("Total + pajak  : Rp %.0f\n", totalPlusPajak);
-    printf("------------------------------\n");
-
-    // ALUR 4: Split bill dari total itu secara adil + dibulatkan
-    printf("\n===== STRUK SPLIT BILL =====\n");
-    for (int i = 0; i < jumlahOrang; i++) {
-        // Yang pesen mahal nanggung pajak lebih gede
-        double bagianAdil = belanja[i] + (belanja[i] / totalKotor) * nominalPajak;
-        bayarAkhir[i] = bulatkanKeRibuan(bagianAdil);
-
-        printf("\n%s:\n", nama[i]);
-        printf("  Belanja asli : Rp %.0f\n", belanja[i]);
-        printf("  + bagian pajak : Rp %.0f\n", bagianAdil);
-        printf("  => Bayar (dibulatkan ke ribuan) : Rp %d\n", bayarAkhir[i]);
+    /* 4. Split bill adil + bulatkan */
+    printf("\n=== SPLIT BILL ===\n");
+    for (int i = 0; i < orang; i++) {
+        double adil = makan[i] + (makan[i] / total) * rpPajak;
+        harusBayar[i] = bulatRibuan(adil);
+        printf("%s: Rp %.0f + pajak = Rp %.0f -> bayar Rp %d\n",
+               nama[i], makan[i], adil, harusBayar[i]);
     }
 
-    printf("\n--- RINGKASAN TRANSFER ---\n");
-    for (int i = 0; i < jumlahOrang; i++) {
-        printf("%s transfer Rp %d\n", nama[i], bayarAkhir[i]);
+    printf("\n--- TRANSFER ---\n");
+    for (int i = 0; i < orang; i++) {
+        printf("%s transfer Rp %d\n", nama[i], harusBayar[i]);
     }
-    printf("--------------------------\n");
 
     return 0;
 }
